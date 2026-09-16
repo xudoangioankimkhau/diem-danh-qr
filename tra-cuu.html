@@ -3,220 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sổ Liên Lạc Điện Tử</title>
+  <title>Tra Cứu Sổ Liên Lạc Giáo Lý</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    
-    /* Cho phép toàn bộ trang cuộn tự nhiên */
-    html, body {
-      min-height: 100vh;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto; /* Bật lại thanh cuộn trang */
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #f4f6f9;
-    }
-
-    .card {
-      background: #ffffff;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 14px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .header-title { text-align: center; color: #1a73e8; margin: 0; font-size: 18px; text-transform: uppercase; font-weight: 700; }
-    .sub-title { text-align: center; color: #5f6368; margin-bottom: 12px; font-size: 12px; }
-
-    #resultContent {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .section-box {
-      background: #ffffff;
-      border: 1px solid #e8eaed;
-      border-radius: 10px;
-      padding: 10px 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #1a73e8;
-      margin: 0 0 6px 0;
-      border-bottom: 1.5px solid #e8f0fe;
-      padding-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    /* Khung cuộn nội bộ giới hạn chiều cao hợp lý */
-    .scroll-content {
-      max-height: 180px; /* Giới hạn tối đa, dài hơn sẽ xuất hiện thanh cuộn */
-      overflow-y: auto;
-      padding-right: 4px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .scroll-content::-webkit-scrollbar { width: 4px; }
-    .scroll-content::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-    .scroll-content::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-
-    /* Dòng thông tin rõ ràng cho phụ huynh */
-    .info-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #f1f3f4; font-size: 13px; }
-    .info-row:last-child { border-bottom: none; }
-    .info-label { color: #5f6368; font-weight: 500; }
-    .info-val { color: #202124; font-weight: 600; text-align: right; }
-
-    .custom-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .custom-table th { background: #f8f9fa; color: #3c4043; text-align: left; padding: 6px; border-bottom: 2px solid #dadce0; font-weight: 600; position: sticky; top: 0; z-index: 1; }
-    .custom-table td { padding: 5px 6px; border-bottom: 1px solid #f1f3f4; color: #202124; }
-
-    .badge-present { background: #e6f4ea; color: #137333; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-absent { background: #fce8e6; color: #c5221f; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-late { background: #fef7e0; color: #b06000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-role { background: #e8f0fe; color: #174ea6; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
-
-    .phone-link { color: #1a73e8; text-decoration: none; font-weight: 600; }
-    #statusMessage { text-align: center; padding: 30px 10px; color: #1a73e8; font-size: 14px; font-weight: bold; }
-    .error-msg { color: #d93025 !important; }
+    body { background-color: #f4f6f9; font-family: Arial, sans-serif; }
+    .card-custom { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .header-title { background: #0d6efd; color: white; border-radius: 12px 12px 0 0; padding: 15px; }
+    .status-badge { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; font-weight: bold; }
+    /* Màu sắc trạng thái điểm danh */
+    .bg-comat { background-color: #0d6efd; color: white; }      /* Có mặt: Xanh dương */
+    .bg-cophep { background-color: #198754; color: white; }     /* Có phép (P): Màu XANH LÁ */
+    .bg-muon { background-color: #ffc107; color: #212529; }     /* Đi muộn (M): Vàng */
+    .bg-vang { background-color: #dc3545; color: white; }       /* Vắng: Đỏ */
   </style>
 </head>
 <body>
 
-<div class="card">
-  <h2 class="header-title">Sổ Liên Lạc Điện Tử</h2>
-  <div class="sub-title">Thông tin & Kết quả học tập</div>
+<div class="container py-4" style="max-width: 700px;">
 
-  <div id="statusMessage">⏳ Đang lấy dữ liệu học sinh, vui lòng chờ...</div>
+  <!-- Form Tra Cứu -->
+  <div class="card card-custom">
+    <div class="header-title text-center">
+      <h4 class="mb-0">SỔ LIÊN LẠC ĐIỆN TỬ</h4>
+    </div>
+    <div class="card-body p-4">
+      <div class="input-group mb-3">
+        <input type="text" id="maHSInput" class="form-control form-control-lg" placeholder="Nhập Mã Học Sinh (Ví dụ: TN3B001)...">
+        <button class="btn btn-primary btn-lg" type="button" onclick="traCuuThongTin()">Tra Cứu</button>
+      </div>
+      <div id="loading" class="text-center d-none">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+      </div>
+      <div id="errorMessage" class="alert alert-danger d-none mt-3"></div>
+    </div>
+  </div>
 
-  <div id="resultContent" style="display: none;">
-    <!-- 1. THÔNG TIN HỌC SINH -->
-    <div class="section-box">
-      <div class="section-title">👤 THÔNG TIN HỌC SINH</div>
-      <div class="info-row"><span class="info-label">Mã học sinh:</span><span class="info-val" id="stMa"></span></div>
-      <div class="info-row"><span class="info-label">Họ và tên:</span><span class="info-val" id="stTen" style="color:#1a73e8;"></span></div>
-      <div class="info-row"><span class="info-label">Ngày sinh:</span><span class="info-val" id="stNS"></span></div>
-      <div class="info-row"><span class="info-label">Nơi ở:</span><span class="info-val" id="stDC"></span></div>
-      <div class="info-row"><span class="info-label">Phụ huynh:</span><span class="info-val" id="stPH"></span></div>
-      <div class="info-row"><span class="info-label">Lớp:</span><span class="info-val" id="stLop"></span></div>
-      <div class="info-row"><span class="info-label">Số điện thoại:</span><span class="info-val" id="stSdt"></span></div>
+  <!-- Kết Quả Hiển Thị -->
+  <div id="resultContainer" class="d-none">
+    
+    <!-- Thông Tin Học Sinh -->
+    <div class="card card-custom p-3">
+      <h5 class="text-primary border-bottom pb-2">THÔNG TIN HỌC SINH</h5>
+      <div class="row g-2 mt-1">
+        <div class="col-6"><strong>Họ và Tên:</strong> <span id="txtHoTen"></span></div>
+        <div class="col-6"><strong>Mã HS:</strong> <span id="txtMaHS"></span></div>
+        <div class="col-6"><strong>Ngày sinh:</strong> <span id="txtNgaySinh"></span></div>
+        <div class="col-6"><strong>Lớp:</strong> <span id="txtLop"></span></div>
+        <div class="col-12"><strong>Tên Bố/Mẹ:</strong> <span id="txtPhuHuynh"></span></div>
+        <div class="col-12"><strong>Địa chỉ:</strong> <span id="txtDiaChi"></span></div>
+      </div>
     </div>
 
-    <!-- 2. KẾT QUẢ HỌC TẬP -->
-    <div class="section-box">
-      <div class="section-title">📊 KẾT QUẢ HỌC TẬP</div>
-      <div id="gradeContainer" class="scroll-content"></div>
+    <!-- Bảng Điểm -->
+    <div class="card card-custom p-3">
+      <h5 class="text-primary border-bottom pb-2">KẾT QUẢ HỌC TẬP</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Môn học / Cột điểm</th>
+              <th>Điểm số</th>
+            </tr>
+          </thead>
+          <tbody id="tblBangDiem"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- 3. ĐIỂM DANH CHUYÊN CẦN -->
-    <div class="section-box">
-      <div class="section-title">📌 ĐIỂM DANH CHUYÊN CẦN</div>
-      <div id="attendanceContainer" class="scroll-content"></div>
+    <!-- Lịch Sử Điểm Danh -->
+    <div class="card card-custom p-3">
+      <h5 class="text-primary border-bottom pb-2">LỊCH SỬ ĐIỂM DANH (Tính đến hôm nay)</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle text-center mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Ngày học</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="tblDiemDanh"></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- 4. GIÁO LÝ VIÊN PHỤ TRÁCH -->
-    <div class="section-box">
-      <div class="section-title">👨‍🏫 THÔNG TIN GIÁO LÝ VIÊN PHỤ TRÁCH</div>
-      <div id="gvListContainer" class="scroll-content"></div>
+    <!-- Danh Sách Giáo Lý Viên -->
+    <div class="card card-custom p-3">
+      <h5 class="text-primary border-bottom pb-2">GIÁO LÝ VIÊN PHỤ TRÁCH</h5>
+      <ul class="list-group list-group-flush" id="listGiaoLyVien"></ul>
     </div>
+
   </div>
 </div>
 
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec"; 
+  // Dán đường link Deploy Apps Script của bạn vào đây
+  const WEB_APP_URL = "DUONG_LINH_DEPLOY_WEB_APP_CU_A_BAN";
 
-  function handleResponse(data) {
-    if (data && data.status === "success" && data.student) {
-      document.getElementById("statusMessage").style.display = "none";
-      document.getElementById("resultContent").style.display = "flex";
-
-      document.getElementById("stMa").innerText = data.student.maHS || "";
-      document.getElementById("stTen").innerText = data.student.name || "";
-      document.getElementById("stNS").innerText = data.student.dob || "";
-      document.getElementById("stDC").innerText = data.student.address || "";
-      document.getElementById("stPH").innerText = data.student.parentName || "";
-      document.getElementById("stLop").innerText = data.student.className || "";
-      document.getElementById("stSdt").innerText = data.student.phone || "";
-
-      var htmlGrade = "";
-      if (data.grades && data.grades.length > 0) {
-        data.grades.forEach(g => {
-          htmlGrade += `<div class="info-row"><span class="info-label">${g.subject}:</span><span class="info-val" style="color:#c5221f;">${g.score}</span></div>`;
-        });
-      } else {
-        htmlGrade = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa có dữ liệu bảng điểm.</div>';
-      }
-      document.getElementById("gradeContainer").innerHTML = htmlGrade;
-
-      var htmlAtt = "";
-      if (data.attendance && data.attendance.length > 0) {
-        data.attendance.forEach(a => {
-          var badgeClass = "badge-present";
-          if (a.status === "Vắng") badgeClass = "badge-absent";
-          if (a.status === "Đi muộn") badgeClass = "badge-late";
-          htmlAtt += `<div class="info-row"><span class="info-label">Ngày ${a.date}:</span><span class="${badgeClass}">${a.status}</span></div>`;
-        });
-      } else {
-        htmlAtt = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa có dữ liệu điểm danh.</div>';
-      }
-      document.getElementById("attendanceContainer").innerHTML = htmlAtt;
-
-      var htmlGV = "";
-      if (data.teachers && data.teachers.length > 0) {
-        htmlGV += '<table class="custom-table">';
-        htmlGV += '<thead><tr><th>STT</th><th>Họ tên</th><th>SĐT</th><th>Chức vụ</th></tr></thead><tbody>';
-        data.teachers.forEach(function(gv) {
-          htmlGV += `<tr>
-            <td>${gv.stt}</td>
-            <td><b>${gv.name}</b></td>
-            <td><a href="tel:${gv.phone}" class="phone-link">${gv.phone}</a></td>
-            <td><span class="badge-role">${gv.role}</span></td>
-          </tr>`;
-        });
-        htmlGV += '</tbody></table>';
-      } else {
-        htmlGV = '<div style="color:#70757a; font-size:12px; padding:4px 0;">Chưa cập nhật giáo viên cho lớp này.</div>';
-      }
-      document.getElementById("gvListContainer").innerHTML = htmlGV;
-
-    } else {
-      document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerText = "⚠️ " + (data ? data.message : "Không tìm thấy dữ liệu!");
-    }
-  }
-
-  function loadData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const maParam = urlParams.get('ma') || urlParams.get('maHS') || urlParams.get('id');
-
-    if (!maParam) {
-      document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerHTML = "⚠️ Mã QR không chứa tham số mã học sinh!";
+  function traCuuThongTin() {
+    const maHS = document.getElementById("maHSInput").value.trim();
+    if (!maHS) {
+      alert("Vui lòng nhập Mã học sinh!");
       return;
     }
 
-    const oldScript = document.getElementById("jsonpScript");
-    if (oldScript) oldScript.remove();
+    // Reset giao diện
+    document.getElementById("loading").classList.remove("d-none");
+    document.getElementById("errorMessage").classList.add("d-none");
+    document.getElementById("resultContainer").classList.add("d-none");
 
+    // Gọi API Apps Script (Sử dụng JSONP để tránh CORS)
     const script = document.createElement('script');
-    script.id = "jsonpScript";
-    script.src = `${WEB_APP_URL}?ma=${encodeURIComponent(maParam)}&callback=handleResponse&_=${new Date().getTime()}`;
-    script.onerror = function() {
-      document.getElementById("statusMessage").className = "error-msg";
-      document.getElementById("statusMessage").innerHTML = `⚠️ Không thể kết nối máy chủ.<br><button onclick="loadData()" style="margin-top:8px;padding:6px 12px;border-radius:6px;border:none;background:#1a73e8;color:#fff;font-weight:bold;cursor:pointer;">Thử lại</button>`;
-    };
+    script.src = `${WEB_APP_URL}?maHS=${encodeURIComponent(maHS)}&callback=handleResponse`;
     document.body.appendChild(script);
   }
 
-  window.onload = loadData;
+  function handleResponse(data) {
+    document.getElementById("loading").classList.add("d-none");
+
+    if (data.status !== "success") {
+      const errBox = document.getElementById("errorMessage");
+      errBox.innerText = data.message || "Không tìm thấy dữ liệu học sinh!";
+      errBox.classList.remove("d-none");
+      return;
+    }
+
+    // 1. Ghi thông tin học sinh
+    const st = data.student;
+    document.getElementById("txtHoTen").innerText = st.name || "N/A";
+    document.getElementById("txtMaHS").innerText = st.maHS || "N/A";
+    document.getElementById("txtNgaySinh").innerText = st.dob || "N/A";
+    document.getElementById("txtLop").innerText = st.className || "N/A";
+    document.getElementById("txtPhuHuynh").innerText = st.parentName || "N/A";
+    document.getElementById("txtDiaChi").innerText = st.address || "N/A";
+
+    // 2. Ghi Bảng điểm
+    const tblDiem = document.getElementById("tblBangDiem");
+    tblDiem.innerHTML = "";
+    if (data.grades && data.grades.length > 0) {
+      data.grades.forEach(g => {
+        tblDiem.innerHTML += `
+          <tr>
+            <td class="text-start ps-3">${g.subject}</td>
+            <td class="fw-bold text-primary">${g.score}</td>
+          </tr>`;
+      });
+    } else {
+      tblDiem.innerHTML = `<tr><td colspan="2" class="text-muted">Chưa có dữ liệu điểm số</td></tr>`;
+    }
+
+    // 3. Ghi Lịch sử điểm danh (Xử lý màu sắc chuẩn)
+    const tblDD = document.getElementById("tblDiemDanh");
+    tblDD.innerHTML = "";
+    if (data.attendance && data.attendance.length > 0) {
+      data.attendance.forEach(item => {
+        let badgeClass = "bg-vang"; // Mặc định Vắng -> Đỏ
+
+        if (item.status === "Có mặt") {
+          badgeClass = "bg-comat";  // Có mặt -> Xanh dương
+        } else if (item.status === "Có phép") {
+          badgeClass = "bg-cophep"; // Có phép -> XANH LÁ (Chuẩn yêu cầu)
+        } else if (item.status === "Đi muộn") {
+          badgeClass = "bg-muon";   // Đi muộn -> Vàng
+        }
+
+        tblDD.innerHTML += `
+          <tr>
+            <td class="fw-bold">${item.date}</td>
+            <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+          </tr>`;
+      });
+    } else {
+      tblDD.innerHTML = `<tr><td colspan="2" class="text-muted">Chưa có lịch sử điểm danh</td></tr>`;
+    }
+
+    // 4. Ghi danh sách Giáo lý viên
+    const listGV = document.getElementById("listGiaoLyVien");
+    listGV.innerHTML = "";
+    if (data.teachers && data.teachers.length > 0) {
+      data.teachers.forEach(gv => {
+        listGV.innerHTML += `
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <strong>${gv.name}</strong> <small class="text-muted">(${gv.role || 'GLV'})</small>
+            </div>
+            <a href="tel:${gv.phone}" class="btn btn-sm btn-outline-success">SĐT: ${gv.phone}</a>
+          </li>`;
+      });
+    } else {
+      listGV.innerHTML = `<li class="list-group-item text-muted">Chưa có thông tin Giáo lý viên</li>`;
+    }
+
+    // Hiện container kết quả
+    document.getElementById("resultContainer").classList.remove("d-none");
+  }
 </script>
 
 </body>
