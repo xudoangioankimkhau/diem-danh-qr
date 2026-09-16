@@ -11,7 +11,7 @@
     .header-title { background: #0d6efd; color: white; border-radius: 12px 12px 0 0; padding: 15px; }
     .status-badge { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; font-weight: bold; }
     
-    /* Màu sắc trạng thái điểm danh */
+    /* Trạng thái điểm danh */
     .bg-comat { background-color: #0d6efd; color: white; }      /* Có mặt: Xanh dương */
     .bg-cophep { background-color: #198754; color: white; }     /* Có phép (P): XANH LÁ */
     .bg-muon { background-color: #ffc107; color: #212529; }     /* Đi muộn (M): Vàng */
@@ -22,7 +22,7 @@
 
 <div class="container py-4" style="max-width: 700px;">
 
-  <!-- Khối Loading khi quét mã QR xong -->
+  <!-- Khối Loading khi quét mã QR -->
   <div id="loading" class="text-center py-5">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
     <h5 class="mt-3 text-muted">Đang tải thông tin học sinh...</h5>
@@ -95,36 +95,48 @@
 </div>
 
 <script>
-  // Thay thế đường link Web App Deploy của bạn vào đây
-  const WEB_APP_URL = "DUONG_LINH_DEPLOY_WEB_APP_CU_A_BAN";
+  // Link Web App Apps Script chính thức của bạn
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwQAMz4NP80kRnS23GXcHayjPgtvo1UKbtFeIzxh_X8JzkJ33LrrsQXSrttGe1JabYiiQ/exec";
 
-  // Tự động chạy khi mở trang / quét mã QR
   window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
-    // Nhận Mã HS từ đường link QR (ví dụ: ?ma=TN3B001 hoặc ?maHS=TN3B001)
     const maHS = urlParams.get('ma') || urlParams.get('maHS');
 
     if (!maHS) {
-      document.getElementById("loading").classList.add("d-none");
-      const errBox = document.getElementById("errorMessage");
-      errBox.innerText = "Không tìm thấy Mã học sinh! Vui lòng quét lại mã QR.";
-      errBox.classList.remove("d-none");
+      showError("Không tìm thấy Mã học sinh trên đường link! Vui lòng kiểm tra lại mã QR.");
       return;
     }
 
-    // Tự động gọi dữ liệu ngay lập tức
+    // Tự động báo lỗi nếu kết nối Server quá 12 giây
+    const timeout = setTimeout(() => {
+      showError("Không thể kết nối với Server Google Sheets. Bạn vui lòng kiểm tra lại mạng hoặc quyền Deploy (Anyone) trên Apps Script.");
+    }, 12000);
+
+    // Gọi API Apps Script qua JSONP
     const script = document.createElement('script');
     script.src = `${WEB_APP_URL}?maHS=${encodeURIComponent(maHS)}&callback=handleResponse`;
+    
+    script.onload = () => clearTimeout(timeout);
+    script.onerror = () => {
+      clearTimeout(timeout);
+      showError("Lỗi kết nối tới Apps Script!");
+    };
+
     document.body.appendChild(script);
   });
+
+  function showError(msg) {
+    document.getElementById("loading").classList.add("d-none");
+    const errBox = document.getElementById("errorMessage");
+    errBox.innerText = msg;
+    errBox.classList.remove("d-none");
+  }
 
   function handleResponse(data) {
     document.getElementById("loading").classList.add("d-none");
 
     if (data.status !== "success") {
-      const errBox = document.getElementById("errorMessage");
-      errBox.innerText = data.message || "Không tìm thấy dữ liệu học sinh!";
-      errBox.classList.remove("d-none");
+      showError(data.message || "Không tìm thấy dữ liệu học sinh!");
       return;
     }
 
@@ -152,19 +164,19 @@
       tblDiem.innerHTML = `<tr><td colspan="2" class="text-muted">Chưa có dữ liệu điểm số</td></tr>`;
     }
 
-    // 3. Lịch sử điểm danh (Tô màu đúng chuẩn)
+    // 3. Lịch sử điểm danh (Chuẩn màu Xanh lá cho Có phép)
     const tblDD = document.getElementById("tblDiemDanh");
     tblDD.innerHTML = "";
     if (data.attendance && data.attendance.length > 0) {
       data.attendance.forEach(item => {
-        let badgeClass = "bg-vang"; // Vắng -> Đỏ
+        let badgeClass = "bg-vang"; // Mặc định Vắng -> Đỏ
 
         if (item.status === "Có mặt") {
           badgeClass = "bg-comat";  // Có mặt -> Xanh dương
         } else if (item.status === "Có phép") {
-          badgeClass = "bg-cophep"; // Có phép -> XANH LÁ
+          badgeClass = "bg-cophep"; // Có phép (P) -> XANH LÁ
         } else if (item.status === "Đi muộn") {
-          badgeClass = "bg-muon";   // Đi muộn -> Vàng
+          badgeClass = "bg-muon";   // Đi muộn (M) -> Vàng
         }
 
         tblDD.innerHTML += `
@@ -194,7 +206,7 @@
       listGV.innerHTML = `<li class="list-group-item text-muted">Chưa có thông tin Giáo lý viên</li>`;
     }
 
-    // Hiển thị giao diện
+    // Hiển thị nội dung
     document.getElementById("resultContainer").classList.remove("d-none");
   }
 </script>
