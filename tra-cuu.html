@@ -190,8 +190,9 @@
       showError("Thời gian kết nối quá lâu. Vui lòng kiểm tra lại đường truyền mạng.");
     }, 12000);
 
+    // Tải dữ liệu JSONP
     const script = document.createElement('script');
-    script.src = `${WEB_APP_URL}?maHS=${encodeURIComponent(maHS)}&callback=handleResponse`;
+    script.src = `${WEB_APP_URL}?action=get_student_info&maHS=${encodeURIComponent(maHS)}&callback=handleResponse`;
     
     script.onload = () => clearTimeout(timeout);
     script.onerror = () => {
@@ -212,17 +213,17 @@
   function handleResponse(data) {
     document.getElementById("loading").classList.add("d-none");
 
-    if (data.status !== "success") {
-      showError(data.message || "Không tìm thấy dữ liệu học sinh!");
+    if (!data || data.status !== "success") {
+      showError(data ? data.message : "Không tìm thấy dữ liệu học sinh!");
       return;
     }
 
     // 1. Thông tin học sinh
-    const st = data.student;
+    const st = data.student || {};
     document.getElementById("txtHoTen").innerText = st.name || "N/A";
     document.getElementById("txtMaHS").innerText = st.maHS || "N/A";
     document.getElementById("txtNgaySinh").innerText = st.dob || "N/A";
-    document.getElementById("txtLop").innerText = st.className || "N/A";
+    document.getElementById("txtLop").innerText = st.className || st.lop || "N/A";
     document.getElementById("txtPhuHuynh").innerText = st.parentName || "N/A";
     document.getElementById("txtDiaChi").innerText = st.address || "N/A";
 
@@ -251,7 +252,7 @@
         if (item.status === "Có mặt") {
           badgeClass = "bg-comat";  
         } else if (item.status === "Có phép") {
-          badgeClass = "bg-cophep"; // Màu xanh lá nhẹ nhàng
+          badgeClass = "bg-cophep";
         } else if (item.status === "Đi muộn") {
           badgeClass = "bg-muon";   
         }
@@ -266,7 +267,7 @@
       tblDD.innerHTML = `<tr><td colspan="2" class="text-muted py-3">Chưa có dữ liệu điểm danh</td></tr>`;
     }
 
-    // 4. Giáo lý viên
+    // 4. Giáo Lý Viên
     const listGV = document.getElementById("listGiaoLyVien");
     listGV.innerHTML = "";
     if (data.teachers && data.teachers.length > 0) {
